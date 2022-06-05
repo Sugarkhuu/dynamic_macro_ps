@@ -27,7 +27,7 @@ disp(par) % Display economic parameters
 % use exp(linspace(...)) instead
 % make the adjustment to move the log-spaced grid to cover negative asset
 % holdings, too.
-gri.k   = exp(linspace(0,log(),mpar.nk)) - xxx; %Define asset grid on log-linearspaced
+gri.k   = exp(linspace(0,log(-mpar.mink+1),mpar.nk)) + mpar.mink - 1; %Define asset grid on log-linearspaced
 prob.z  = [3/5, 2/5; 4/90,  86/90];
 gri.z   = [1/9, 10/9];
 
@@ -35,38 +35,41 @@ gri.z   = [1/9, 10/9];
 %% 3. Define utility functions
 
 if par.gamma ==1
-    util     = @(c) xxx; % Utility
-    mutil    = @(c) xxx;  % Marginal utility
-    invmutil = @(mu) xxx;% inverse marginal utility
+    util     = @(c) log(c); % Utility
+    mutil    = @(c) 1/c;  % Marginal utility
+    invmutil = @(mu) 1/mu;% inverse marginal utility
 else
-    util     = @(c) xxx; % Utility
-    mutil    = @(c) xxx; % Marginal utility
-    invmutil = @(mu) xxx; % inverse marginal utility
+    util     = @(c) c^(1-par.gamma)/(1-par.gamma); % Utility
+    mutil    = @(c) c^(-par.gamma); % Marginal utility
+    invmutil = @(mu) 1/mu; % inverse marginal utility
 end
 
 
 %% 4b. Value Function Iteration (on-grid)
 % Meshes of capital and productivity
-[meshes.kprime,   meshes.k, meshes.z] = ndgrid(xxx,xxx,xxx);
-Y               = xxx; % Cash at hand (Labor income plus assets cum dividend)
+[meshes.kprime, meshes.k, meshes.z] = ndgrid(gri.k,gri.k,gri.z);
+Y               = meshes.z + (1+par.r)*meshes.k; % Cash at hand (Labor income plus assets cum dividend)
 tic % Start timer
 V               = zeros(mpar.nk,mpar.nz); % Initialize Value Function
 distVF_on       = 1; % Initialize Distance
 iterVF          = 1; % Initialize Iteration count
-Chat            = xxx; % Consumption: Cash at hand minus investment
+Chat            = Y - meshes.kprime; % Consumption: Cash at hand minus investment
 U               = util(Chat); % evaluate utility
 U(Chat<=0)      = - 1.0e10;  % replace negative consumption utility by high negative value
 while distVF_on(iterVF)>mpar.crit % Value Function iteration loop: until distance is smaller than crit.
     % Update Value Function using on-grid search
-    EV              = xxx;           
-    Vhat            = xxx + repmat(reshape(EV,[mpar.nk,1,mpar.nz]), [1,mpar.nk,1]); 
-    [Vaux,pol_ind]  = max(xxx,[],1); % Optimize given cont' value
+    EV              = V;           
+    Vhat            = U + par.beta * repmat(reshape(EV,[mpar.nk,1,mpar.nz]), [1,mpar.nk,1]); 
+    [Vaux,pol_ind]  = max(Vhat,[],1); % Optimize given cont' value
     Vnew            = squeeze(Vaux); 
-    kprime_on       = squeeze(gri.k(xxx));
+    kprime_on       = squeeze(gri.k(pol_ind));
     dd              = max(abs(Vnew(:)-V(:))); % Calculate distance between old guess and update
     V               = Vnew; % Update Value Function
     iterVF          = iterVF+1; %Count iterations
     distVF_on(iterVF)  = dd;   % Save distance
+    V_on       = reshape(V,[mpar.nk,mpar.nz]);
+    plot(V_on(:,1)); hold on;
+    pause;
 end
 V_on       = reshape(V,[mpar.nk,mpar.nz]);
 time(1)    = toc; % Save Time used for VFI
