@@ -27,7 +27,7 @@ disp(par) % Display economic parameters
 % use exp(linspace(...)) instead
 % make the adjustment to move the log-spaced grid to cover negative asset
 % holdings, too.
-gri.k   = exp(linspace(0,log(-mpar.mink+1),mpar.nk)) + mpar.mink - 1; %Define asset grid on log-linearspaced
+gri.k   = exp(linspace(0,log(mpar.maxk - mpar.mink + 1),mpar.nk)) + mpar.mink - 1; %Define asset grid on log-linearspaced
 prob.z  = [3/5, 2/5; 4/90,  86/90];
 gri.z   = [1/9, 10/9];
 
@@ -58,7 +58,7 @@ U               = util(Chat); % evaluate utility
 U(Chat<=0)      = - 1.0e10;  % replace negative consumption utility by high negative value
 while distVF_on(iterVF)>mpar.crit % Value Function iteration loop: until distance is smaller than crit.
     % Update Value Function using on-grid search
-    EV              = V;           
+    EV              = V*prob.z';           
     Vhat            = U + par.beta * repmat(reshape(EV,[mpar.nk,1,mpar.nz]), [1,mpar.nk,1]); 
     [Vaux,pol_ind]  = max(Vhat,[],1); % Optimize given cont' value
     Vnew            = squeeze(Vaux); 
@@ -67,9 +67,9 @@ while distVF_on(iterVF)>mpar.crit % Value Function iteration loop: until distanc
     V               = Vnew; % Update Value Function
     iterVF          = iterVF+1; %Count iterations
     distVF_on(iterVF)  = dd;   % Save distance
-    V_on       = reshape(V,[mpar.nk,mpar.nz]);
-    plot(V_on(:,1)); hold on;
-    pause;
+%     V_on       = reshape(V,[mpar.nk,mpar.nz]);
+    % plot(V_on(:,1)); hold on;
+%     pause;
 end
 V_on       = reshape(V,[mpar.nk,mpar.nz]);
 time(1)    = toc; % Save Time used for VFI
@@ -91,6 +91,8 @@ while distVF(iterVF)>mpar.crit % Value Function iteration loop: until distance i
     V             = Vnew; % Update Value Function
     iterVF        = iterVF+1; %Count iterations
     distVF(iterVF)= dd;   % Save distance
+    % plot(V(:,1)); hold on;
+    % pause
 end
 V      = reshape(V,[mpar.nk,mpar.nz]);
 time(2)=toc; % Save Time used for VFI

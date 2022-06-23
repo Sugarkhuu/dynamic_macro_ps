@@ -10,15 +10,15 @@ function [Vnew,kprime] = VFI_update_spline(V,Y,util,par,mpar,gri,prob)
 V      = reshape(V,[mpar.nk,mpar.nz]); % make sure that V has the right format dim1: k, dim2:z
 kprime = zeros(size(V)); % allocate policy matrix
 Vnew   = zeros(size(V)); % allocate new value matrix
-EV     = xxx;   % Calculate expected continuation value
+EV     = par.beta * V * prob.z';   % Calculate expected continuation value
 
 for zz=1:mpar.nz % loop over Incomes
-    ev_int = griddedInterpolant({xxx},xxx,'spline'); % Prepare interpolant
+    ev_int = griddedInterpolant({gri.k},EV(:,zz),'spline'); % Prepare interpolant
     for kk=1:mpar.nk % loop of Assets
-        f             = @(k)(-util(xxx)-ev_int({k})); % Define function to be minimized
-        [kp,v]        = fminbnd(f,xxx,xxx); % Find minimum of f for savings between borrowing constraint and cash at hand 
-        Vnew(kk,zz)   = xxx;  % Save value
-        kprime(kk,zz) = xxx; % Save policy
+        f             = @(k)(-util(Y(kk,zz)-k)-ev_int({k})); % Define function to be minimized
+        [kp,v]        = fminbnd(f,mpar.mink,min(Y(kk,zz),mpar.maxk)); % Find minimum of f for savings between borrowing constraint and cash at hand 
+        Vnew(kk,zz)   = v;  % Save value
+        kprime(kk,zz) = kp; % Save policy
     end
 end
 Vnew=Vnew(:);

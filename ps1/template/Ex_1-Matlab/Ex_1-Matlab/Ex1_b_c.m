@@ -60,14 +60,14 @@ while distVF(iterVF)>mpar.crit % Value Function iteration loop: until distance i
 end
 V      = reshape(V,[mpar.nk,mpar.nz]);
 time(1)=toc; % Save Time used for VFI
-
+keyboard
 %% 4b. Value Function Iteration (Broyden)
 % Meshes of capital and productivity
 tic % Start timer
 
-Dist_V         = @(V)  (xxx(:)- reshape(VFI_update_spline(xxx,Y,util,par,mpar,gri,prob),[mpar.nk*mpar.nz,1]));
+Dist_V         = @(V)  (V(:)- reshape(VFI_update_spline(V,Y,util,par,mpar,gri,prob),[mpar.nk*mpar.nz,1]));
 V              = zeros(mpar.nk,mpar.nz); % Initialize Value Function
-[V,~,~,dist_B] = broyden(xxx,xxx,mpar.crit,1e-14,250);
+[V,~,~,dist_B] = broyden(Dist_V,V(:),mpar.crit,1e-14,250);
 [~,kprime]     = VFI_update_spline(V,Y,util,par,mpar,gri,prob); % Optimize given cont' value
 V              = reshape(V,[mpar.nk,mpar.nz]);
 time(2)=toc; % Save Time used for VFI
@@ -82,9 +82,9 @@ while dist_PFI(iterPF)>mpar.crit % Value Function iteration loop: until distance
     % Update Value Function using off-grid search
     [~,kprime] = VFI_update_spline(V,Y,util,par,mpar,gri,prob); % Optimize given cont' value
     % Value Function update
-    U          = util(xxx-xxx); % Payoff under optimal policy
-    Gamma      = TransitionMat(xxx,gri,mpar,prob.z); % Transition matrix
-    Vnew       = (eye(xxx) - par.beta*xxx)\xxx;
+    U          = util(Y-kprime); % Payoff under optimal policy
+    Gamma      = TransitionMat(kprime,gri,mpar,prob.z); % Transition matrix
+    Vnew       = (eye(numel(V(:))) - par.beta*Gamma)\U(:);
     dd         = max(abs(Vnew(:)-V(:))); % Calculate distance between old guess and update
     V          = Vnew; % Update Value Function
     iterPF     = iterPF+1; %Count iterations
