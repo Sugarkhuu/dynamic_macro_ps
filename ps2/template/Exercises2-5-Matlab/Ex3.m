@@ -16,7 +16,7 @@ gri.k   = exp(linspace(0,log(mpar.maxk-mpar.mink+1),mpar.nk))-1+mpar.mink; %Defi
 [meshes.k,  meshes.z] = ndgrid(gri.k,gri.z);
 
 %% 2. Equilibrium in Bewley model with young method
-[K,kprime,marginal_k, ~, ~] = K_Agg(xxx,xxx,par,mpar,prob.z,meshes,gri); % Solve for equlibrium
+[K,kprime,marginal_k, ~, ~] = K_Agg(0,1,par,mpar,prob.z,meshes,gri); % Solve for equlibrium
 
 %% 3. Plot Policy Functions
 figure(1)
@@ -31,7 +31,7 @@ ylabel('consumption')
 %% 4. Simulate the economy
 % Define an off-grid savings function by interpolation
 tic
-Saving  = griddedInterpolant({xxx,xxx},kprime); % Continuous Savings Function as Linear Interpolant
+Saving  = griddedInterpolant({gri.k,gri.z},kprime); % Continuous Savings Function as Linear Interpolant
 % Simulate the exogeneous state
 PI      = cumsum(prob.z,2);         % Cummulative Transition matrix
 epsilon = rand(1,mpar.T);           % Random numbers for simulation
@@ -39,7 +39,7 @@ S       = randi(mpar.nz,1,mpar.T);  % Starting value
 k       = zeros(1,mpar.T);          % Starting value for NEXT PERIODS ASSETS assets
 for t=2:mpar.T
     S(t)    = sum(PI(S(t-1),:)<epsilon(t))+1;   % Update productivity state
-    k(t)    = Saving({xxx,xxx});     % Update Assest Holdings
+    k(t)    = Saving({k(t-1),gri.z(S(t))});     % Update Assest Holdings
 end
 time(1)     = toc;
 

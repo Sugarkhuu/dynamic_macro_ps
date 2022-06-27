@@ -43,7 +43,7 @@ else
 end
 
 %% 4. Value Function Iteration
-%{
+
 tic % Start timer
 V    = zeros(mpar.nk,mpar.nz); % Initialize Value Function
 distVF = 1; % Initialize Distance
@@ -69,19 +69,20 @@ title('Policy Function from VFI') % Title and legend of the graph
 legend({'low productivity','high productivity', '45 degree'},'Location','northwest')
 xlabel('assets')
 ylabel('saving')
-%}
+
 %% 6. Endogenous Grid method using linear interpolation
 % $$\frac{\partial u}{\partial c}\left[C^*(k',z)\right]=(1+r) \beta E_{z}\left\{\frac{\partialu}{\partial
 % c}\left[C(k',z')\right]\right\}$$
 
 tic % Reset timer
 C       = meshes.z + meshes.k*(1+par.r); %Initial guess for consumption policy: roll over assets
+C(C<0.01) = 0.01; % to avoid negative consumption
 Cold    = C; % Save old policy
 distEG  = 1; % Initialize Distance
 iterEG  = 1; % Initialize Iteration count
 while distEG(iterEG)>mpar.crit
     C      = EGM(Cold, mutil,invmutil,par,mpar,prob.z,meshes,gri); % Update consumption policy by EGM
-    dd     = max(abs(C - Cold)); % Calculate Distance
+    dd     = max(abs(C(:) - Cold(:))); % Calculate Distance
 
     Cold   = C; % Replace old policy
     iterEG = iterEG+1; %count iterations

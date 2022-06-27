@@ -11,7 +11,7 @@ function [C,Kprime] = EGM(C,mutil,invmutil,par,mpar,P,meshes,gri)
     Cstar  = invmutil((1+par.r)*par.beta*emu);     % Calculate cstar(m',z)
     Kstar  = (Cstar + meshes.k - meshes.z)/(1+par.r); % Calculate mstar(m',z)
     Kprime = meshes.k; % initialze Capital Policy
-keyboard
+
     for z=1:mpar.nz % For massive problems, this can be done in parallel
         % generate savings function k(z,kstar(k',z))=k'
         Savings     = griddedInterpolant(Kstar(:,z),gri.k,'spline');
@@ -20,7 +20,7 @@ keyboard
         % Replace Savings for HH saving at BC
         Kprime(BC,z)= par.b; % Households with the BC flag choose borrowing contraint
     end
-    disp("he")
+
     % generate consumption function c(z,k^*(z,k'))
     C          = (1+par.r)*meshes.k+meshes.z-Kprime; %Consumption update
 end
