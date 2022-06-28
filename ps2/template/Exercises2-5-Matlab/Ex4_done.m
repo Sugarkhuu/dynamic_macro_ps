@@ -16,7 +16,7 @@ gri.k   = exp(linspace(0,log(mpar.maxk-mpar.mink+1),mpar.nk))-1+mpar.mink; % Def
 % Meshes of capital and productivity
 [meshes.k,  meshes.z] = ndgrid(gri.k,gri.z);
 %% 2. Calculate Excess demand
-ExcessDemand  = @(R) (K_Agg(xxx,xxx,par,mpar,prob.z,meshes,gri));   % Calculate the difference between capital supply and demand for wages and returns given by assumed capital demand
+ExcessDemand  = @(R) (K_Agg(R,1,par,mpar,prob.z,meshes,gri));   % Calculate the difference between capital supply and demand for wages and returns given by assumed capital demand
 
 Rgrid = -0.01:.001:.049;                                        % a grid for interest rates for plotting
 ExD   = arrayfun(ExcessDemand,Rgrid);                           % calculate excess demand for these rates

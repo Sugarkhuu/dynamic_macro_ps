@@ -11,15 +11,18 @@ function [K,kprime,marginal_k, StDist, Gamma] = K_Agg(R,w,par,mpar,P,meshes,gri)
     par.r    = R;
     meshes.z = meshes.z*w; % take into account wages
     Cold     = (meshes.z  + par.r*meshes.k); %Initial guess for consumption policy: roll over assets
+    Cold(Cold<0.01) = 0.01; % to avoid negative consumption
+    
     distEG   = 1; % Initialize Distance
     while distEG>mpar.crit
-        C      = EGM(Cold,par,mpar,P,meshes,gri, mutil, invmutil); % Update consumption policy by EGM
+        C      = EGM(Cold,mutil,invmutil,par,mpar,P,meshes,gri); % Update consumption policy by EGM
         distEG = max(abs(C(:)-Cold(:))); % Calculate Distance
         Cold   = C; % Replace old policy
+        Cold(Cold<0.01) = 0.01; % to avoid negative consumption
     end
-    [~,kprime] = EGM(C,par,mpar,P,meshes,gri, mutil, invmutil);
+    [~,kprime] = EGM(C, mutil, invmutil,par,mpar,P,meshes,gri);
     
-    [Gamma, StDist] = Young(xxx,gri,mpar,P);
-    marginal_k      = sum(reshape(xxx,[mpar.nk, mpar.nz]),2);
-    K               = dot(xxx,xxx);
+    [Gamma, StDist] = Young(kprime,gri,mpar,P);
+    marginal_k      = sum(reshape(StDist,[mpar.nk, mpar.nz]),2);
+    K               = dot(marginal_k,gri.k);
     end

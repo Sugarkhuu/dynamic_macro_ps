@@ -21,7 +21,7 @@ function [Gamma, StDist] = Young(kprime,gri,mpar,P)
         end
     end
     Gamma  = reshape(Trans_array,[mpar.nk*mpar.nz, mpar.nk*mpar.nz]); % Turn 4-d array into a transition matrix stacking 2 dimensions
-    [x,~]  = eigs(xxx,1);   % Solve $x* = x* \Gamma$
-    StDist = xxx./ xxx;        % Normalize Eigenvector to sum(x)=1
+    [x,~]  = eigs(Gamma',1);   % Solve $x* = x* \Gamma$
+    StDist = x./sum(x);        % Normalize Eigenvector to sum(x)=1
     end
     
