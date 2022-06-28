@@ -6,20 +6,21 @@ function [C,Kprime] = EGM(C,mutil,invmutil,par,mpar,P,meshes,gri)
     % P is the transition probability matrix. MESHES and GRI are meshes and grids for income
     % (z) and assets (k).
 
-    mu     = xxx; % Calculate marginal utility from c'
-    emu    = xxx;     % Calculate expected marginal utility
-    Cstar  = xxx;     % Calculate cstar(m',z)
-    Kstar  = xxx; % Calculate mstar(m',z)
-    Kprime = xxx; % initialze Capital Policy
+    mu     = mutil(C); % Calculate marginal utility from c'
+    emu    = mu*P';     % Calculate expected marginal utility
+    Cstar  = invmutil((1+par.r)*par.beta*emu);     % Calculate cstar(m',z)
+    Kstar  = (Cstar + meshes.k - meshes.z)/(1+par.r); % Calculate mstar(m',z)
+    Kprime = meshes.k; % initialze Capital Policy
 
     for z=1:mpar.nz % For massive problems, this can be done in parallel
         % generate savings function k(z,kstar(k',z))=k'
-        Savings     = griddedInterpolant(xxx,xxx,'spline');
-        Kprime(:,z) = Savings(xxx);     % Obtain k'(z,k) by interpolation
-        BC          = xxx < Kstar(1,z); % Check Borrowing Constraint
+        Savings     = griddedInterpolant(Kstar(:,z),gri.k,'spline');
+        Kprime(:,z) = Savings(gri.k);     % Obtain k'(z,k) by interpolation
+        BC          = gri.k < Kstar(1,z); % Check Borrowing Constraint
         % Replace Savings for HH saving at BC
         Kprime(BC,z)= par.b; % Households with the BC flag choose borrowing contraint
     end
+
     % generate consumption function c(z,k^*(z,k'))
-    C          = xxx; %Consumption update
+    C          = (1+par.r)*meshes.k+meshes.z-Kprime; %Consumption update
 end
