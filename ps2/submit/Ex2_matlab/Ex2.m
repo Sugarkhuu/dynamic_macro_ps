@@ -88,8 +88,6 @@ while distEG(iterEG)>mpar.crit
     iterEG = iterEG+1; %count iterations
     distEG(iterEG) = dd;
 end
-
-disp("hu")
 [C,Kprimestar] = EGM(C,mutil,invmutil,par,mpar,prob.z,meshes,gri);
 time(2)        = toc; %Time to solve using EGM
 %% 7. Plot Policy Functions from Collocation and compare to VFI

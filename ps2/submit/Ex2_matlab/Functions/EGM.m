@@ -14,7 +14,7 @@ function [C,Kprime] = EGM(C,mutil,invmutil,par,mpar,P,meshes,gri)
 
     for z=1:mpar.nz % For massive problems, this can be done in parallel
         % generate savings function k(z,kstar(k',z))=k'
-        Savings     = griddedInterpolant(Kstar(:,z),gri.k,'spline');
+        Savings     = griddedInterpolant(Kstar(:,z),Kprime(:,z),'spline');
         Kprime(:,z) = Savings(gri.k);     % Obtain k'(z,k) by interpolation
         BC          = gri.k < Kstar(1,z); % Check Borrowing Constraint
         % Replace Savings for HH saving at BC

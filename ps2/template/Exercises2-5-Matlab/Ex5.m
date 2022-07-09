@@ -18,11 +18,11 @@ gri.k   = exp(linspace(0,log(mpar.maxk-mpar.mink+1),mpar.nk))-1+mpar.mink; %Defi
 % Calculate stationary labor supply
 aux = prob.z^1000;
 N   = dot(aux(1,:),gri.z);
-
+keyboard
 %% 2. Calculate Excess demand
-Kdemand         = @(R) (N * (par.alpha/(R+par.delta)).^(1/(1-par.alpha)));          % Calculate capital demand by firms for a given interest rate and employment
-rate            = @(K) (par.alpha* N.^(1-par.alpha) * K.^(par.alpha-1) -par.delta); % Calculate the return on capital given K and employment N 
-wage            = @(K) ((1-par.alpha)* N.^(-par.alpha) * K.^(par.alpha));           % Calculate the wage rate given K and employment N 
+Kdemand         = @(R) (N*(par.alpha/(R+par.delta)).^(1/(1-par.alpha)));          % Calculate capital demand by firms for a given interest rate and employment
+rate            = @(K) (par.alpha*N.^(1-par.alpha)*K.^(par.alpha-1)-par.delta); % Calculate the return on capital given K and employment N 
+wage            = @(K) ((1-par.alpha)*N.^(-par.alpha) * K.^(par.alpha));           % Calculate the wage rate given K and employment N 
 ExcessDemand    = @(K) (K_Agg(rate(K),wage(K),par,mpar,prob.z,meshes,gri) - K);     % Calculate the difference between capital supply and demand for wages and returns given by assumed capital demand
 
 
